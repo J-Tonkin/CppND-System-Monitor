@@ -212,7 +212,7 @@ string LinuxParser::Ram(int pid) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
-        if (key == "VmSize:") {
+        if (key == "VmData:") { //Using VmData instead of VmSize because it gives a more useful value 
           return value;
         }
       }
@@ -261,15 +261,18 @@ string LinuxParser::User(int pid) {
 }
 
 long LinuxParser::UpTime(int pid) {
-  string upTime;
+  long upTime;
+  string startTime;
   string line;
   std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    for(int i = 0; i < 14; i++){
-    linestream >> upTime;
+    for(int i = 0; i < 22; i++){
+    linestream >> startTime;
+    upTime = LinuxParser::UpTime() - std::stol(startTime)/sysconf(_SC_CLK_TCK);
+    return upTime;
     }
   }
-  return std::stol(upTime);
+  return upTime;
   }
